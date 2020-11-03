@@ -2,7 +2,7 @@ version: '3.7'
 
 services:
   app:
-    image: registry.communicatio.com/ikusei/smart-village-app-rss-importer
+    image: registry.gitlab.tpwd.de/ikusei/smart-village-app-rss-importer/bb-frankfurt-rss_importer
     depends_on: [db]
     environment:
       RAILS_ENV: production
@@ -10,10 +10,13 @@ services:
     configs:
       - source: smart-village-app-rss-importer-database-yml
         target: /app/config/database.yml
-      - source: smart-village-app-rss-importer-unicorn-rb
+      - source: unicorn-5-worker
         target: /app/config/unicorn.rb
+      - source: mainserver-common-master-key
+        target: /app/config/master.key
+      - source: mainserver-common-master-key
+        target: /app/config/credentials/production.key
     volumes:
-      - /etc/localtime:/etc/localtime:ro
       - unicorn:/unicorn
       - assets:/assets
       - settings:/app/config/settings
@@ -26,7 +29,6 @@ services:
     depends_on: [app]
     networks: [default, public]
     volumes:
-      - /etc/localtime:/etc/localtime:ro
       - unicorn:/unicorn
       - assets:/public
     labels:
@@ -36,20 +38,21 @@ services:
         condition: on-failure
 
   db:
-    image: postgres
+    image: 'postgres:10.3-alpine'
     environment:
       POSTGRES_USER: smart
       POSTGRES_PASSWORT: smart
       POSTGRES_DB: smart
+    networks:
+      public:
     volumes:
-      - /etc/localtime:/etc/localtime:ro
       - db:/var/lib/postgresql/data
     deploy:
       restart_policy:
         condition: on-failure
 
   cron:
-    image: registry.communicatio.com/ikusei/smart-village-app-rss-importer
+    image: registry.gitlab.tpwd.de/ikusei/smart-village-app-rss-importer
     environment:
       RAILS_ENV: production
       RAILS_LOG_TO_STDOUT: 1
@@ -59,6 +62,10 @@ services:
     configs:
       - source: smart-village-app-rss-importer-database-yml
         target: /app/config/database.yml
+      - source: mainserver-common-master-key
+        target: /app/config/master.key
+      - source: mainserver-common-master-key
+        target: /app/config/credentials/production.key
     volumes:
       - settings:/app/config/settings
 
@@ -69,11 +76,11 @@ volumes:
   settings:
 
 configs:
-  smart-village-app-rss-importer-nginx-conf:
-    external: true
   smart-village-app-rss-importer-database-yml:
     external: true
-  smart-village-app-rss-importer-unicorn-rb:
+  unicorn-5-worker:
+    external: true
+  mainserver-common-master-key:
     external: true
 
 networks:
