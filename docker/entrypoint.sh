@@ -10,6 +10,6 @@ dockerize -wait tcp://$DB -timeout 30s
 rm -f /myapp/tmp/pids/server.pid
 
 npm set audit false
-rake db:migrate
+bundle exec rake db:migrate
 
 exec "$@"
