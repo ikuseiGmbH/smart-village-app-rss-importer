@@ -26,7 +26,6 @@ class Importer
       result = ApiRequestService.new(url, nil, nil, @record.json_data, {Authorization: "Bearer #{access_token}"}).post_request
       @record.update(updated_at: Time.now, audit_comment: result.body)
     rescue => e
-      @record.update(updated_at: Time.now, audit_comment: e)
       Rollbar.error("API Request Error.", full_message: e)
     end
   end
